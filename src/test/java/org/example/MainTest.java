@@ -21,16 +21,16 @@ class MainTest {
         List<LogEntry> senderEntries = userEntries.get("user002");
         assertThat(senderEntries).hasSize(1);
         LogEntry senderEntry = senderEntries.get(0);
-        assertThat(senderEntry.type).isEqualTo(OperationType.TRANSFERRED);
-        assertThat(senderEntry.amount).isEqualTo(990.00);
-        assertThat(senderEntry.relatedUser).isEqualTo("user001");
+        assertThat(senderEntry.getType()).isEqualTo(OperationType.TRANSFERRED);
+        assertThat(senderEntry.getAmount()).isEqualTo(990.00);
+        assertThat(senderEntry.getRelatedUser()).isEqualTo("user001");
 
         List<LogEntry> receiverEntries = userEntries.get("user001");
         assertThat(receiverEntries).hasSize(1);
         LogEntry receiverEntry = receiverEntries.get(0);
-        assertThat(receiverEntry.type).isEqualTo(OperationType.RECIVED);
-        assertThat(receiverEntry.amount).isEqualTo(990.00);
-        assertThat(receiverEntry.relatedUser).isEqualTo("user002");
+        assertThat(receiverEntry.getType()).isEqualTo(OperationType.RECIVED);
+        assertThat(receiverEntry.getAmount()).isEqualTo(990.00);
+        assertThat(receiverEntry.getRelatedUser()).isEqualTo("user002");
     }
 
     @Test
@@ -41,9 +41,9 @@ class MainTest {
         Main.processLine(line, userEntries);
 
         LogEntry entry = userEntries.get("user001").get(0);
-        assertThat(entry.type).isEqualTo(OperationType.BALANCE_INQUIRY);
-        assertThat(entry.amount).isEqualTo(1000.00);
-        assertThat(entry.relatedUser).isNull();
+        assertThat(entry.getType()).isEqualTo(OperationType.BALANCE_INQUIRY);
+        assertThat(entry.getAmount()).isEqualTo(1000.00);
+        assertThat(entry.getRelatedUser()).isNull();
     }
 
     @Test
@@ -58,11 +58,11 @@ class MainTest {
     @Test
     void formatEntry_Transferred_FormatsCorrectly() {
         LogEntry entry = new LogEntry();
-        entry.timestamp = LocalDateTime.parse("2025-05-10T10:03:23");
-        entry.user = "user002";
-        entry.type = OperationType.TRANSFERRED;
-        entry.amount = 990.00;
-        entry.relatedUser = "user001";
+        entry.setTimestamp(LocalDateTime.parse("2025-05-10T10:03:23"));
+        entry.setUser("user002");
+        entry.setType(OperationType.TRANSFERRED);
+        entry.setAmount(990.00);
+        entry.setRelatedUser("user001");
 
         String result = Main.formatEntry(entry);
         assertThat(result).isEqualTo("[2025-05-10 10:03:23] user002 transferred 990.00 to user001");
@@ -71,10 +71,10 @@ class MainTest {
     @Test
     void formatEntry_Withdrew_FormatsCorrectly() {
         LogEntry entry = new LogEntry();
-        entry.timestamp = LocalDateTime.parse("2025-05-10T23:55:32");
-        entry.user = "user002";
-        entry.type = OperationType.WITHDREW;
-        entry.amount = 50.00;
+        entry.setTimestamp(LocalDateTime.parse("2025-05-10T23:55:32"));
+        entry.setUser("user002");
+        entry.setType(OperationType.WITHDREW);
+        entry.setAmount(50.00);
 
         String result = Main.formatEntry(entry);
         assertThat(result).isEqualTo("[2025-05-10 23:55:32] user002 withdrew 50.00");
@@ -89,16 +89,16 @@ class MainTest {
         );
 
         double initialBalance = entries.stream()
-                .filter(e -> e.type == OperationType.BALANCE_INQUIRY)
+                .filter(e -> e.getType() == OperationType.BALANCE_INQUIRY)
                 .findFirst()
-                .map(e -> e.amount)
+                .map(e -> e.getAmount())
                 .orElse(0.0);
 
         double balance = initialBalance;
         for (LogEntry e : entries) {
-            switch (e.type) {
-                case TRANSFERRED, WITHDREW -> balance -= e.amount;
-                case RECIVED -> balance += e.amount;
+            switch (e.getType()) {
+                case TRANSFERRED, WITHDREW -> balance -= e.getAmount();
+                case RECIVED -> balance += e.getAmount();
             }
         }
 
@@ -107,8 +107,8 @@ class MainTest {
 
     private LogEntry createEntry(OperationType type, double amount) {
         LogEntry entry = new LogEntry();
-        entry.type = type;
-        entry.amount = amount;
+        entry.setType(type);
+        entry.setAmount(amount);
         return entry;
     }
 }

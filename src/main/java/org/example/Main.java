@@ -47,25 +47,25 @@ public class Main {
             String user = entry.getKey();
             List<LogEntry> entries = entry.getValue();
 
-            entries.sort(Comparator.comparing(e -> e.timestamp));
+            entries.sort(Comparator.comparing(LogEntry::getTimestamp));
 
             double initialBalance = 0.0;
             Optional<LogEntry> firstBalance = entries.stream()
-                    .filter(e -> e.type == OperationType.BALANCE_INQUIRY)
+                    .filter(e -> e.getType() == OperationType.BALANCE_INQUIRY)
                     .findFirst();
             if (firstBalance.isPresent()) {
-                initialBalance = firstBalance.get().amount;
+                initialBalance = firstBalance.get().getAmount();
             }
 
             double balance = initialBalance;
             for (LogEntry logEntry : entries) {
-                switch (logEntry.type) {
+                switch (logEntry.getType()) {
                     case RECIVED:
-                        balance += logEntry.amount;
+                        balance += logEntry.getAmount();
                         break;
                     case TRANSFERRED:
                     case WITHDREW:
-                        balance -= logEntry.amount;
+                        balance -= logEntry.getAmount();
                         break;
                 }
             }
@@ -89,18 +89,18 @@ public class Main {
     public static String formatEntry(LogEntry entry) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String base = String.format("[%s] %s ",
-                entry.timestamp.format(formatter),
-                entry.user);
+                entry.getTimestamp().format(formatter),
+                entry.getUser());
 
-        switch (entry.type) {
+        switch (entry.getType()) {
             case BALANCE_INQUIRY:
-                return base + String.format(Locale.US, "balance inquiry %.2f", entry.amount);
+                return base + String.format(Locale.US, "balance inquiry %.2f", entry.getAmount());
             case TRANSFERRED:
-                return base + String.format(Locale.US, "transferred %.2f to %s", entry.amount, entry.relatedUser);
+                return base + String.format(Locale.US, "transferred %.2f to %s", entry.getAmount(), entry.getRelatedUser());
             case RECIVED:
-                return base + String.format(Locale.US, "received %.2f from %s", entry.amount, entry.relatedUser);
+                return base + String.format(Locale.US, "received %.2f from %s", entry.getAmount(), entry.getRelatedUser());
             case WITHDREW:
-                return base + String.format(Locale.US, "withdrew %.2f", entry.amount);
+                return base + String.format(Locale.US, "withdrew %.2f", entry.getAmount());
             default:
                 return "";
         }
@@ -153,23 +153,23 @@ public class Main {
         }
 
         LogEntry entry = new LogEntry();
-        entry.timestamp = timestamp;
-        entry.user = user;
-        entry.amount = amount;
-        entry.relatedUser = targetUser;
+        entry.setTimestamp(timestamp);
+        entry.setUser(user);
+        entry.setAmount(amount);
+        entry.setRelatedUser(targetUser);
 
         switch (operation) {
             case "balance inquiry":
-                entry.type = OperationType.BALANCE_INQUIRY;
+                entry.setType(OperationType.BALANCE_INQUIRY);
                 break;
             case "transferred":
-                entry.type = OperationType.TRANSFERRED;
+                entry.setType(OperationType.TRANSFERRED);
                 break;
             case "withdrew":
-                entry.type = OperationType.WITHDREW;
+                entry.setType(OperationType.WITHDREW);
                 break;
             case "received":
-                entry.type = OperationType.RECIVED;
+                entry.setType(OperationType.RECIVED);
                 break;
             default:
                 System.err.println("Unknown operation: " + operation);
@@ -178,13 +178,13 @@ public class Main {
 
         userEntries.computeIfAbsent(user, k -> new ArrayList<>()).add(entry);
 
-        if (entry.type == OperationType.TRANSFERRED && targetUser != null) {
+        if (entry.getType() == OperationType.TRANSFERRED && targetUser != null) {
             LogEntry recivedEntry = new LogEntry();
-            recivedEntry.timestamp = timestamp;
-            recivedEntry.user = targetUser;
-            recivedEntry.type = OperationType.RECIVED;
-            recivedEntry.amount = amount;
-            recivedEntry.relatedUser = user;
+            recivedEntry.setTimestamp(timestamp);
+            recivedEntry.setUser(user);
+            recivedEntry.setType(OperationType.RECIVED);
+            recivedEntry.setAmount(amount);
+            recivedEntry.setRelatedUser(user);
             userEntries.computeIfAbsent(targetUser, k -> new ArrayList<>()).add(recivedEntry);
         }
     }
